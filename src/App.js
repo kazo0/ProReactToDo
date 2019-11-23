@@ -1,6 +1,7 @@
 import React from 'react';
-//import logo from './logo.svg';
-//import './App.css';
+import { TodoRow } from './TodoRow';
+import { TodoBanner } from './TodoBanner';
+import { TodoCreator } from './TodoCreator';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -11,40 +12,50 @@ export default class App extends React.Component {
       { action: "Get Shoes", done: false },
       { action: "Collect Tickets", done: true },
       { action: "Call Joe", done: false }],
-      newItemText: ""
     }
   }
 
   updateNewTextValue = (event) => {
-    this.setState({ newItemText: event.target.value })
+    this.setState({ newItemText: event.target.value });
   }
 
-  createNewToDo = () => {
-    if (!this.state.todoItems.find((x) => x.action === this.state.newItemText)) {
+  createNewToDo = (task) => {
+    if (!this.state.todoItems.find((x) => x.action === task)) {
       this.setState({
         todoItems: [...this.state.todoItems,
-        { action: this.state.newItemText, done: false }],
+        { action: task, done: false }],
         newItemText: ""
-      })
+      });
     }
   }
 
+  toggleToDo = (todo) => this.setState({
+    todoItems:
+      this.state.todoItems.map(item => item.action === todo.action
+        ? { ...item, done: !item.done } : item)
+  });
+
+  todoTableRows = () =>
+    this.state.todoItems.map(item =>
+      <TodoRow key={item.action} item={item} callback={this.toggleToDo}/>
+    );
+
   render = () =>
     <div>
-      <h4 className="bg-primary text-white text-center p-2">
-        {this.state.userName}'s To Do List
-         ({this.state.todoItems.filter(x => !x.done).length} items to do)
-        </h4>
+      <TodoBanner name={this.state.userName} tasks={this.state.todoItems}/>
       <div className="container-fluid">
-        <div className="my-1">
-          <input className="form-control"
-            value={this.state.newItemText}
-            onChange={this.updateNewTextValue} />
-          <button className="btn btn-primary mt-1"
-            onClick={this.createNewToDo}>
-            Add
-        </button>
-        </div>
+        <TodoCreator callback={this.createNewToDo}/>
+        <table className="table table-striped table-bordered">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Done</th>
+            </tr>
+          </thead>
+          <tbody>
+            {this.todoTableRows()}
+          </tbody>
+        </table>
       </div>
     </div>
 }
